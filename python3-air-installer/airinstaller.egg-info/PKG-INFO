@@ -1,0 +1,17 @@
+Metadata-Version: 1.1
+Name: airinstaller
+Version: 0.1
+Summary: Python3 lib for install air apps
+Home-page: http://www.lliurex.net
+Author: Juanma Navarro
+Author-email: juanma1980@gmail.com
+License: GPL
+Description: UNKNOWN
+Keywords: gtk,adobe,air
+Platform: UNIX
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: ConsoleIntended Audience :: End Users
+Classifier: License :: OSI Approved :: GNU General Public License v3
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python
+Classifier: Topic :: Air apps installer
