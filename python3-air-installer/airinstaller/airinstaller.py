@@ -70,7 +70,7 @@ class AirInstaller():
 			if sw_install_err:
 				self._debug("Failed to install code: %s"%sw_install_err)
 				if sw_install_err!=0:
-					self._install_air_package_sdk(air_file)
+					self._install_air_package_sdk(air_file,icon)
 				self.err_code=1
 
 			if not self.err_code:
@@ -95,7 +95,11 @@ class AirInstaller():
 		return sw_install_err
 	#def _install_air_package
 
-	def _install_air_package_sdk(self,air_file):
+	def _install_air_package_sdk(self,air_file,icon=None):
+		if not icon:
+			icon=self.default_icon
+		file_name=os.path.basename(air_file)
+		basedir_name=file_name.replace('.air','')
 		wrkdir=self.adobeair_folder+basedir_name
 		if os.path.isdir(wrkdir):
 			try:
@@ -177,7 +181,7 @@ Categories=Application;Education;Development;ComputerScience;\n\
 Encoding=UTF-8\n\
 Version=1.0\n\
 Type=Application\n\
-Exec=/opt/adobe-air-sdk/adobe-air/adobe-air /opt/adobe-air-sdk/"+basedir_name+"/"+file_name+"\n\
+Exec=/opt/adobe-air-sdk/adobe-air/adobe-air "+self.adobeair_folder+basedir_name+"/"+file_name+"\n\
 Icon="+basedir_name+".png\n\
 Terminal=false\n\
 Name="+basedir_name+"\n\

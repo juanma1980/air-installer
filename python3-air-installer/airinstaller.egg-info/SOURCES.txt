@@ -1,4 +1,4 @@
-setup3.py
+setup.py
 python3-air-installer/airinstaller/__init__.py
 python3-air-installer/airinstaller/airinstaller.py
 python3-air-installer/airinstaller.egg-info/PKG-INFO
