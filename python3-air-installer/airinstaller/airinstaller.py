@@ -14,14 +14,14 @@ LOG='/tmp/air_installer.log'
 class AirInstaller():
 	def __init__(self):
 		self.dbg=True
-		self.default_icon="/usr/share/mate/applications/edu.media.mit.scratch2editor.desktop"
+		self.default_icon="/usr/share/air-installer/rsrc/air-installer_icon.png"
 		self.adobeair_folder="/opt/AdobeAirApp/"
 		self.adobeair_pkgname="adobeair"
 	#def __init__
 
 	def _debug(self,msg):
 		if self.dbg:
-			print("DBG: %s"%msg)
+			print("airinstaller: %s"%msg)
 			self._log(msg)
 	#def _debug
 
@@ -32,6 +32,7 @@ class AirInstaller():
 	#def _log
 
 	def install(self,air_file,icon=None):
+		sw_err=0
 		sw_install_adobe=False
 		sw_install_sdk=False
 		sw_download=False
@@ -61,41 +62,43 @@ class AirInstaller():
 			self._debug("Installing %s"%air_file)
 			#Non SDK 
 #			os.system("DISPLAY=:0 /usr/bin/Adobe\ AIR\ Application\ Installer -silent -eulaAccepted -location /opt/AdobeAirApp "+air_file)
-			sw_install_err=self._install_air_package(air_file)
-			if sw_install_err:
-				self._debug("Trying with adobe sdk...")
+			sw_err=self._install_air_package(air_file)
+			if sw_err:
+				self._debug("Trying rebuild...")
 				modified_air_file=self._recompile_for_certificate_issue(air_file)
 				self._debug("Installing %s"%modified_air_file)
-				sw_install_err=self._install_air_package(modified_air_file)
-			if sw_install_err:
-				self._debug("Failed to install code: %s"%sw_install_err)
-				if sw_install_err!=0:
-					self._install_air_package_sdk(air_file,icon)
-				self.err_code=1
+				sw_err=self._install_air_package(modified_air_file)
+			if sw_err:
+				self._debug("Failed to install code: %s"%sw_err)
+				self._debug("Going with sdk installation")
+				sw_err=self._install_air_package_sdk(air_file,icon)
+				sw_install_sdk=True
 
-			if not self.err_code:
+			if not sw_err and sw_install_sdk:
 				#Copy icon to hicolor
 				sw_installed=self._generate_desktop(file_name)
 				if sw_installed:
 					hicolor_icon='/usr/share/icons/hicolor/48x48/apps/%s.png'%basedir_name
 					shutil.copyfile (icon,hicolor_icon)
-					self._debug("Installed in %s/%s"%(wrkdir,basedir_name))
+					self._debug("Installed in %s"%(basedir_name))
 				else:
 					self._debug("%s Not Installed!!!"%(basedir_name))
 	#def install
 
 	def _install_air_package(self,air_file):
+		sw_err=1
 		my_env=os.environ.copy()
 		my_env["DISPLAY"]=":0"
 		try:
-			sw_install_err=subprocess.check_output(["/usr/bin/Adobe AIR Application Installer","-silent","-eulaAccepted","-location","/opt/AdobeAirApp",air_file],env=my_env)
+			subprocess.check_output(["/usr/bin/Adobe AIR Application Installer","-silent","-eulaAccepted","-location","/opt/AdobeAirApp",air_file],env=my_env)
+			sw_err=0
 		except Exception as e:
-			sw_install_err=True
 			self._debug("Install Error: %s"%e)
-		return sw_install_err
+		return sw_err
 	#def _install_air_package
 
 	def _install_air_package_sdk(self,air_file,icon=None):
+		sw_err=0
 		if not icon:
 			icon=self.default_icon
 		file_name=os.path.basename(air_file)
@@ -105,18 +108,29 @@ class AirInstaller():
 			try:
 				shutil.rmtree(wrkdir)
 			except Exception as e:
+				sw_err=3
 				self._debug(e)
 		try:
 			os.makedirs(wrkdir)
 		except Exception as e:
+			sw_err=4
 			self._debug(e)
-		shutil.copyfile (air_file,wrkdir+"/"+file_name)
+		if sw_err==0:
+			try:
+				shutil.copyfile (air_file,wrkdir+"/"+file_name)
+			except:
+				sw_err=1
 		#Copy icon to hicolor
-		hicolor_icon='/usr/share/icons/hicolor/48x48/apps/%s.png'%basedir_name
-		shutil.copyfile (icon,hicolor_icon)
+		if sw_err==0:
+			hicolor_icon='/usr/share/icons/hicolor/48x48/apps/%s.png'%basedir_name
+			try:
+				shutil.copyfile (icon,hicolor_icon)
+			except:
+				sw_err=2
 
 		self._generate_desktop_sdk(file_name)
 		self._debug("Installed in %s/%s"%(wrkdir,air_file))
+		return sw_err
 	#def _install_air_package_sdk
 
 	def _generate_desktop(self,file_name):
@@ -286,9 +300,99 @@ Categories=Application;Education;Development;ComputerScience;\n\
 				subprocess.check_output(["/opt/adobe-air-sdk/bin/adt","-package","-tsa","none","-storetype","pkcs12","-keystore","lliurex.p12",new_air_file,air_xml,"."],input=b"lliurex",env=my_env)
 			except Exception as e:
 				self._debug(e)
-			
 		return tmpdir+'/'+new_air_file
+	#def _recompile_for_certificate_issue
 
+	def get_installed_apps(self):
+		installed_apps={}
+		for app_dir in os.listdir(self.adobeair_folder):
+			self._debug("Testing %s"%app_dir)
+			app_desktop=''
+			if os.path.isdir(self.adobeair_folder+app_dir+'/bin') or os.path.isfile(self.adobeair_folder+app_dir+'/'+app_dir+'.air'):
+				#Search the desktop of the app
+				self._debug("Searching desktop %s"%'/usr/share/applications/'+app_dir+'.desktop')
+				sw_desktop=False
+				if os.path.isdir(self.adobeair_folder+app_dir+'/share/META-INF/AIR'):
+					for pkg_file in os.listdir(self.adobeair_folder+app_dir+'/share/META-INF/AIR'):
+						if pkg_file.endswith('.desktop'):
+							app_desktop='/usr/share/applications/'+pkg_file
+							sw_desktop=True
+							break
+				if sw_desktop==False:
+					if os.path.isfile('/usr/share/applications/'+app_dir+'.desktop'):
+						app_desktop='/usr/share/applications/'+app_dir+'.desktop'
+					elif os.path.isfile('/usr/share/applications/'+app_dir.lower()+'.desktop'):
+						app_desktop='/usr/share/applications/'+app_dir.lower()+'.desktop'
+				#Get the app_id
+				self._debug("Searching id %s"%self.adobeair_folder+app_dir+'/share/application.xml')
+				if os.path.isfile(self.adobeair_folder+app_dir+'/share/application.xml'):
+					f=open(self.adobeair_folder+app_dir+'/share/application.xml','r')
+					flines=f.readlines()
+					app_id=''
+					for fline in flines:
+						fline=fline.strip()
+						if fline.startswith('<id>'):
+							app_id=fline
+							app_id=app_id.replace('<id>','')
+							app_id=app_id.replace('</id>','')
+							break
+					f.close()
+				elif os.path.isfile(self.adobeair_folder+app_dir+'/'+app_dir+'.air'):
+					app_id=app_dir+'.air'
+				installed_apps[app_dir]={'desktop':app_desktop,'air_id':app_id}
+		return installed_apps
+	#def get_installed_apps
+
+	def remove_air_app(self,*kwarg):
+		sw_err=1
+		my_env=os.environ.copy()
+		my_env["DISPLAY"]=":0"
+		air_dict=kwarg[0]
+		sw_uninstall_err=False
+		if 'air_id' in air_dict.keys():
+			self._debug("Removing %s"%air_dict['air_id'])
+			if air_dict['air_id'].endswith('.air'):
+				air_file=self.adobeair_folder+air_dict['air_id'].replace('.air','')+'/'+air_dict['air_id']
+				self._debug("SDK app detected %s"%air_file)
+				if os.path.isfile(air_file):
+					try:
+						shutil.rmtree(os.path.dirname(air_file))
+						sw_err=0
+					except Exception as e:
+						self._debug(e)
+			else:
+				try:
+					#Let's try with supercow's power
+					pkgname=subprocess.check_output(["apt-cache","search",air_dict['air_id']],env=my_env,universal_newlines=True)
+					pkglist=pkgname.split(' ')
+					for pkg in pkglist:
+						self._debug("Testing %s"%pkg)
+						if air_dict['air_id'].lower() in pkg.lower():
+							try:
+								self._debug("Uninstalling %s"%pkg)
+								sw_uninstall_err=subprocess.check_output(["apt-get","-y","remove",pkg],universal_newlines=True)
+								self._debug("Uninstalled OK %s"%pkg)
+								sw_err=0
+							except Exception as e:
+								self._debug(e)
+							break
+				except Exception as e:
+						sw_uninstall_err=True
+				
+				if sw_err:
+					try:
+						sw_uninstall_err=subprocess.check_output(["/usr/bin/Adobe AIR Application Installer","-silent","-uninstall","-location","/opt/AdobeAirApp",air_dict['air_id']],env=my_env)
+						sw_err=0
+					except Exception as e:
+						self._debug(e)
+
+		if 'desktop' in air_dict.keys():
+			if os.path.isfile(air_dict['desktop']):
+				try:
+					os.remove(air_dict['desktop'])
+				except Exception as e:
+					self._debug(e)
+		return sw_err
 
 	def _check_file_is_air(self,air_file):
 		retval=False
