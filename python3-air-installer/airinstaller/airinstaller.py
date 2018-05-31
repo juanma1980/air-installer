@@ -8,6 +8,8 @@ import shutil
 import tempfile
 import zipfile
 import urllib.request as url
+import glob
+from gi.repository import GdkPixbuf
 
 LOG='/tmp/air_installer.log'
 
@@ -16,6 +18,7 @@ class AirInstaller():
 		self.dbg=True
 		self.default_icon="/usr/share/air-installer/rsrc/air-installer_icon.png"
 		self.adobeair_folder="/opt/AdobeAirApp/"
+		self.adobeairsdk_folder="/opt/adobe-air-sdk/"
 		self.adobeair_pkgname="adobeair"
 	#def __init__
 
@@ -31,28 +34,13 @@ class AirInstaller():
 		f.close()
 	#def _log
 
+	def set_default_icon(self,icon):
+		self.default_icon=icon
+
 	def install(self,air_file,icon=None):
 		sw_err=0
-		sw_install_adobe=False
 		sw_install_sdk=False
-		sw_download=False
-		try:
-			res=subprocess.check_output(["dpkg-query","-W","-f='${Status}'",self.adobeair_pkgname])
-			if "not" in str(res):
-				self._debug("adobeair not installed")
-				sw_install_adobe=True
-		except Exception as e:
-			self._debug("dpkg-query failed: %s"%e)
-			sw_install_adobe=True
-		finally:
-			if sw_install_adobe:
-				sw_download=self._install_adobeair()
-
-		if sw_download==False:
-			self._debug("Adobeair failed to install")
-				
-		if not os.path.isdir(self.adobeair_folder):
-			os.makedirs(self.adobeair_folder)
+		self._check_adobeair()
 		if not icon:
 			icon=self.default_icon
 		self._debug("Procced with file: %s"%air_file)
@@ -60,8 +48,6 @@ class AirInstaller():
 		if self._check_file_is_air(air_file):
 			basedir_name=file_name.replace(".air","")
 			self._debug("Installing %s"%air_file)
-			#Non SDK 
-#			os.system("DISPLAY=:0 /usr/bin/Adobe\ AIR\ Application\ Installer -silent -eulaAccepted -location /opt/AdobeAirApp "+air_file)
 			sw_err=self._install_air_package(air_file)
 			if sw_err:
 				self._debug("Trying rebuild...")
@@ -83,7 +69,78 @@ class AirInstaller():
 					self._debug("Installed in %s"%(basedir_name))
 				else:
 					self._debug("%s Not Installed!!!"%(basedir_name))
+			elif not sw_err and icon!=self.default_icon:
+				#Modify desktop with icon
+				hicolor_icon='/usr/share/icons/hicolor/48x48/apps/%s.png'%basedir_name
+				shutil.copyfile (icon,hicolor_icon)
+				icon_new=os.path.basename(hicolor_icon)
+				self._modify_desktop(air_file,icon_name=icon_new)
 	#def install
+
+	def _modify_desktop(self,air_file,icon_name=None):
+		self._debug("Modify desktop %s"%air_file)
+		air_info=self.get_air_info(air_file)
+		sw_modify_icon=False
+		if 'name' in air_info.keys():
+			cwd=os.getcwd()
+			os.chdir('/usr/share/applications')
+			desktop_list=glob.glob(air_info['name']+"*desktop")
+			if desktop_list==[]:
+				desktop_list=glob.glob(air_info['name'].lower()+"*desktop")
+			if desktop_list:
+				#First file must be the desktop but for sure...
+				sw_modify_icon=False
+				for desktop_file in desktop_list:
+					self._debug("Testing file %s"%desktop_file)
+					f=open(desktop_file,'r')
+					flines=f.readlines()
+					self._debug("Looking for %s"%self.adobeair_folder)
+					for fline in flines:
+						self._debug(fline)
+						self._debug(type(fline))
+						if '/opt/AdobeAirApp' in fline:
+							self._debug("Match")
+							sw_modify_icon=True
+					f.close()
+			if sw_modify_icon:
+				self._debug("Setting icon")
+				new_desktop=[]
+				for fline in flines:
+					if fline.startswith('Icon'):
+						self._debug("Before: %s"%fline)
+						nline='Icon=%s\n'%icon_name
+						self._debug("After: %s"%nline)
+						new_desktop.append(nline)
+					else:
+						new_desktop.append(fline)
+				self._debug("Writing desktop %s"%desktop_file)
+				f=open(desktop_file,'w')
+				f.writelines(new_desktop)
+				f.close()
+			os.chdir(cwd)
+	#def _modify_desktop
+
+	def _check_adobeair(self):
+		sw_install_adobe=False
+		sw_download=False
+		try:
+			res=subprocess.check_output(["dpkg-query","-W","-f='${Status}'",self.adobeair_pkgname])
+			if "not" in str(res):
+				self._debug("adobeair not installed")
+				sw_install_adobe=True
+		except Exception as e:
+			self._debug("dpkg-query failed: %s"%e)
+			sw_install_adobe=True
+		finally:
+			if sw_install_adobe:
+				sw_download=self._install_adobeair()
+
+		if sw_download==False:
+			self._debug("Adobeair failed to install")
+		#Now install the sdk
+		self._install_adobeair_sdk()
+		if not os.path.isdir(self.adobeair_folder):
+			os.makedirs(self.adobeair_folder)
 
 	def _install_air_package(self,air_file):
 		sw_err=1
@@ -207,6 +264,8 @@ Categories=Application;Education;Development;ComputerScience;\n\
 	#def _generate_desktop_sdk
 
 	def _install_adobeair_sdk(self):
+		if os.path.isfile(self.adobeairsdk_folder+'adobe-air/adobe-air'):
+			return
 		self._install_adobeair_depends()
 		self._debug("Installing Adobe Air SDK")
 		subprocess.call(["zero-lliurex-wget","http://lliurex.net/recursos-edu/misc/AdobeAIRSDK.tbz2","/tmp"])
@@ -272,16 +331,9 @@ Categories=Application;Education;Development;ComputerScience;\n\
 	def _recompile_for_certificate_issue(self,air_file):
 		self._debug("Rebuilding package %s"%air_file)
 		new_air_file=''
-		tmpdir=tempfile.mkdtemp()
-		self._debug("Extracting to %s"%tmpdir)
+		tmpdir=self._unzip_air_file(air_file)
+		cwd=os.getcwd()
 		os.chdir(tmpdir)
-		air_pkg=zipfile.ZipFile(air_file,'r')
-		for file_to_unzip in air_pkg.infolist():
-			try:
-				air_pkg.extract(file_to_unzip)
-			except:
-				pass
-		air_pkg.close()
 		air_xml=''
 		for xml_file in os.listdir("META-INF/AIR"):
 			if xml_file.endswith(".xml"):
@@ -300,8 +352,24 @@ Categories=Application;Education;Development;ComputerScience;\n\
 				subprocess.check_output(["/opt/adobe-air-sdk/bin/adt","-package","-tsa","none","-storetype","pkcs12","-keystore","lliurex.p12",new_air_file,air_xml,"."],input=b"lliurex",env=my_env)
 			except Exception as e:
 				self._debug(e)
+		os.chdir(cwd)
 		return tmpdir+'/'+new_air_file
 	#def _recompile_for_certificate_issue
+
+	def _unzip_air_file(self,air_file):
+		cwd=os.getcwd()
+		tmpdir=tempfile.mkdtemp()
+		self._debug("Extracting to %s"%tmpdir)
+		os.chdir(tmpdir)
+		air_pkg=zipfile.ZipFile(air_file,'r')
+		for file_to_unzip in air_pkg.infolist():
+			try:
+				air_pkg.extract(file_to_unzip)
+			except:
+				pass
+		air_pkg.close()
+		os.chdir(cwd)
+		return (tmpdir)
 
 	def get_installed_apps(self):
 		installed_apps={}
@@ -381,7 +449,7 @@ Categories=Application;Education;Development;ComputerScience;\n\
 				
 				if sw_err:
 					try:
-						sw_uninstall_err=subprocess.check_output(["/usr/bin/Adobe AIR Application Installer","-silent","-uninstall","-location","/opt/AdobeAirApp",air_dict['air_id']],env=my_env)
+						sw_uninstall_err=subprocess.check_output(["/usr/bin/Adobe AIR Application Installer","-silent","-uninstall","-location",self.adobeair_folder,air_dict['air_id']],env=my_env)
 						sw_err=0
 					except Exception as e:
 						self._debug(e)
@@ -393,6 +461,47 @@ Categories=Application;Education;Development;ComputerScience;\n\
 				except Exception as e:
 					self._debug(e)
 		return sw_err
+
+	def get_air_info(self,air_file):
+		air_info={}
+		tmpdir=self._unzip_air_file(air_file)
+		cwd=os.getcwd()
+		os.chdir(tmpdir+'/META-INF/AIR')
+		icon_line=''
+		name_line=''
+		if os.path.isfile('application.xml'):
+			f=open('application.xml','r')
+			flines=f.readlines()
+			for fline in flines:
+				fline=fline.strip()
+				if fline.startswith('<filename>'):
+					name_line=fline
+				if fline.startswith('<image48x48>'):
+					if fline!='<image48x48></image48x48>' and icon_line=='':
+						icon_line=fline
+						self._debug(fline)
+			if icon_line:
+				self._debug("ICON: %s"%icon_line)
+				icon=icon_line.replace('<image48x48>','')
+				icon=icon.replace('</image48x48>','')
+				if icon!='':
+					icon=tmpdir+'/'+icon
+					air_info['pb']=GdkPixbuf.Pixbuf.new_from_file_at_scale(icon,64,-1,True)
+			if name_line:
+				name=name_line.replace('<filename>','')
+				air_info['name']=name.replace('</filename>','')
+		else:
+			air_info['name']=os.path.basename(air_file)
+			air_info['name']=air_info['name'].replace('.air','')
+			os.chdir(tmpdir)
+			icon_files=glob("*/*48*png")
+			if not icon_files:
+				icon_files=glob("*48*png")
+			if icon_files:
+				air_info['pb']=GdkPixbuf.Pixbuf.new_from_file_at_scale(icon_files[0],64,-1,True)
+
+		return air_info
+	#def _get_air_info
 
 	def _check_file_is_air(self,air_file):
 		retval=False

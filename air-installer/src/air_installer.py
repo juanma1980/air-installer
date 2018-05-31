@@ -11,6 +11,10 @@ import time
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, GdkPixbuf, Gdk, Gio, GObject,GLib
 
+import gettext
+gettext.textdomain('air-installer')
+_ = gettext.gettext
+
 RSRC="/usr/share/air-installer/rsrc"
 CSS_FILE=RSRC + "air-installer.css"
 GTK_SPACING=6
@@ -26,7 +30,7 @@ class confirmDialog(Gtk.Window):
 
 	def _load_gui(self,air_file):
 		file_name=os.path.basename(air_file)
-		Gtk.Window.__init__(self,title="Confirm action")
+		Gtk.Window.__init__(self,title=_("Install air app"))
 		self.set_position(Gtk.WindowPosition.CENTER)
 		style_provider=Gtk.CssProvider()
 		css=b"""
@@ -69,7 +73,7 @@ class confirmDialog(Gtk.Window):
 		self.lbl_info.set_max_width_chars(20)
 		self.lbl_info.set_width_chars(20)
 		self.lbl_info.set_line_wrap(True)
-		lbl_text="Install <b>%s</b>"%file_name
+		lbl_text=_("Install <b>%s</b>")%file_name
 		self.lbl_info.set_markup(lbl_text)
 		self.lbl_info.set_margin_bottom(GTK_SPACING)
 		self.lbl_info.set_margin_left(GTK_SPACING)
@@ -87,7 +91,7 @@ class confirmDialog(Gtk.Window):
 		img_icon.set_from_file(RSRC+"/air-installer_icon.png")
 		self.pb=img_icon.get_pixbuf()
 
-		lbl_text="<b>Select icon</b> for %s"%file_name
+		lbl_text=_("<b>Select icon</b> for %s")%file_name
 		lbl_icon=Gtk.Label()
 		lbl_icon.set_markup(lbl_text)
 		lbl_icon.set_name('label')
@@ -133,13 +137,13 @@ class confirmDialog(Gtk.Window):
 					img_preview.show()
 			else:
 				img_preview.hide()
-		dw=Gtk.FileChooserDialog("Select icon",None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL,Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
+		dw=Gtk.FileChooserDialog(_("Select icon"),None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL,Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
 		dw.set_action(Gtk.FileChooserAction.OPEN)
 		img_preview=Gtk.Image()
 		img_preview.set_margin_right(GTK_SPACING)
 		file_filter=Gtk.FileFilter()
 		file_filter.add_pixbuf_formats()
-		file_filter.set_name("images")
+		file_filter.set_name(_("images"))
 		dw.add_filter(file_filter)
 		dw.set_preview_widget(img_preview)
 		img_preview.show()
@@ -190,7 +194,7 @@ class confirmDialog(Gtk.Window):
 			self.btn_install.set_sensitive(True)
 			self.btn_icon.set_sensitive(True)
 		if not err:
-			msg="Package <b>%s</b> succesfully installed"%air_file
+			msg=_("Package <b>%s</b> succesfully installed")%air_file
 			self.lbl_info.set_markup(msg)
 			self.box_button.show()
 			self.box_icon.hide()

@@ -18,8 +18,10 @@ from os.path import splitext
 import subprocess
 import tempfile
 
+import airinstaller.airinstaller as installer
+
 import gettext
-gettext.textdomain('air-installer')
+gettext.textdomain('air-manager')
 _ = gettext.gettext
 
 
@@ -52,6 +54,9 @@ class InstallBox(Gtk.VBox):
 
 		self.lbl_air=builder.get_object("install_label")
 		self.lbl_air.props.halign=Gtk.Align.START
+		#Declared here because DropArea needs this references
+		self.img_icon=Gtk.Image()
+		self.lbl_drop=Gtk.Label()
 
 		self.main_box=builder.get_object("install_data_box")
 		self.drop=builder.get_object("btn_drop")
@@ -68,22 +73,20 @@ class InstallBox(Gtk.VBox):
 
 		drop_param=[self.install_label,self.install_button]
 		self.drop_area=DropArea(drop_param)
-		self.drop_area.set_info_label(self.lbl_air)
+		self.drop_area.set_info_widgets(self.lbl_drop,self.img_icon)
 		drop_box=Gtk.Box(spacing=12)
-		msg="<b>Drag</b> an air file\nor <b>click</b> to choose"
-		lbl_drop=Gtk.Label()
-		lbl_drop.set_markup(msg)
-		drop_box.add(lbl_drop)
+		msg=_("<b>Drag</b> an air file\nor <b>click</b> to choose")
+		self.lbl_drop.set_markup(msg)
+		drop_box.add(self.lbl_drop)
 		drop_box.add(self.drop_area)
 		drop_box.props.halign=Gtk.Align.CENTER
 		self.drop.add(drop_box)	
 		self.drop.set_margin_top(12)
 				
-		img_icon=Gtk.Image()
-		img_icon.set_from_file(RSRC+"rsrc/air-installer_icon.png")
-		self.pb=img_icon.get_pixbuf()
+		self.img_icon.set_from_file(RSRC+"rsrc/air-installer_icon.png")
+		self.pb=self.img_icon.get_pixbuf()
 
-		lbl_text="Click to <b>select an icon</b> for the app or use the app's default icon"
+		lbl_text=_("Click to <b>select an icon</b> for the app or use the app's default icon")
 		lbl_icon=Gtk.Label()
 		lbl_icon.props.halign=Gtk.Align.END
 		lbl_icon.props.hexpand=False
@@ -95,7 +98,7 @@ class InstallBox(Gtk.VBox):
 
 		self.box_icon=Gtk.Box(spacing=6)
 		self.box_icon.add(lbl_icon)
-		self.box_icon.add(img_icon)
+		self.box_icon.add(self.img_icon)
 
 		self.btn_icon=builder.get_object('btn_icon')
 		self.btn_icon.set_name("BTN_MENU")
@@ -110,8 +113,7 @@ class InstallBox(Gtk.VBox):
 		self.connect_signals()
 		self.set_css_info()
 		self.install_button.set_sensitive(False)
-		self.btn_icon.connect("clicked",self._set_app_icon,img_icon)
-		self.lbl_air.connect("event",self._debug,"prueba")
+		self.btn_icon.connect("clicked",self._set_app_icon)
 		GObject.threads_init()
 	#def __init__
 
@@ -120,7 +122,7 @@ class InstallBox(Gtk.VBox):
 	#def _debug
 
 	def _filechooser(self,*args):
-		dw=Gtk.FileChooserDialog("Select air package",None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL,Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
+		dw=Gtk.FileChooserDialog(_("Select air package"),None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL,Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
 		dw.set_action(Gtk.FileChooserAction.OPEN)
 		file_filter=Gtk.FileFilter()
 		file_filter.add_pattern('*.air')
@@ -128,10 +130,14 @@ class InstallBox(Gtk.VBox):
 		dw.add_filter(file_filter)
 		air_chooser=dw.run()
 		if air_chooser==Gtk.ResponseType.OK:
+			self.install_label.set_text('')
 			self.drop_area.air_file=dw.get_filename()
 			self.drop_area.set_from_file(DROP_CORRECT)
 			self.install_button.set_sensitive(True)
-			self.lbl_air.set_markup("<b>Install:</b> %s"%os.path.basename(self.drop_area.air_file))
+			self.lbl_drop.set_markup(_("<b>Selected app:</b>\n%s")%os.path.basename(self.drop_area.air_file))
+			air_info=installer.AirInstaller().get_air_info(self.drop_area.air_file)
+			self.img_icon.set_from_pixbuf(air_info['pb'])
+			self.pb=air_info['pb']
 		dw.destroy()
 	#def _filechooser
 
@@ -140,7 +146,7 @@ class InstallBox(Gtk.VBox):
 		self.drop_area.drag_dest_add_text_targets()
 	#def add_text_targets
 	
-	def _set_app_icon(self,widget,img_icon):
+	def _set_app_icon(self,widget):
 		
 		def _update_preview(*arg):
 			if dw.get_preview_filename():
@@ -151,7 +157,7 @@ class InstallBox(Gtk.VBox):
 			else:
 				img_preview.hide()
 
-		dw=Gtk.FileChooserDialog("Select icon",None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL,Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
+		dw=Gtk.FileChooserDialog(_("Select icon"),None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL,Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
 		dw.set_action(Gtk.FileChooserAction.OPEN)
 		img_preview=Gtk.Image()
 		img_preview.set_margin_right(GTK_SPACING)
@@ -166,9 +172,8 @@ class InstallBox(Gtk.VBox):
 		dw.connect("update-preview",_update_preview)
 		new_icon=dw.run()
 		if new_icon==Gtk.ResponseType.OK:
-			pb=GdkPixbuf.Pixbuf.new_from_file_at_scale(dw.get_filename(),64,-1,True)
-			img_icon.set_from_pixbuf(pb)
-			self.pb=pb
+			self.pb=GdkPixbuf.Pixbuf.new_from_file_at_scale(dw.get_filename(),64,-1,True)
+			self.img_icon.set_from_pixbuf(self.pb)
 		dw.destroy()
 	#def _set_app_icon
  
@@ -257,9 +262,9 @@ class DropArea(Gtk.Image):
 			print("DropArea: %s"%msg)
 	#def _debug
 
-	def set_info_label(self,gtkLabel):
-		self._debug("Label: %s"%gtkLabel)
+	def set_info_widgets(self,gtkLabel,gtkImg):
 		self.info_label=gtkLabel
+		self.img_icon=gtkImg
 
 	def on_drag_data_received(self, widget, drag_context, x,y, data,info, time):
 		self.drop=True
@@ -271,11 +276,15 @@ class DropArea(Gtk.Image):
 		check=self.commonFunc.check_extension(text[1])
 
 		if check["status"]:
+			self.install_label.set_text('')
 			Gtk.Image.set_from_file(self,DROP_CORRECT)
 			self.install_button.set_sensitive(True)
 			self.air_file=text[1]
 			if self.info_label:
-				self.info_label.set_markup("<b>Install:</b> %s"%os.path.basename(self.air_file))
+				self.info_label.set_markup(_("<b>Selected app:</b>\n%s")%os.path.basename(self.air_file))
+			air_info=installer.AirInstaller().get_air_info(self.air_file)
+			self.img_icon.set_from_pixbuf(air_info['pb'])
+			InstallBox.pb=air_info['pb']
 			self._debug("File %s"%self.air_file)
 		else:
 			Gtk.Image.set_from_file(self,DROP_INCORRECT)
