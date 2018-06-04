@@ -4,12 +4,12 @@ from gi.repository import Gtk, Pango, GdkPixbuf, Gdk, Gio, GObject,GLib
 import Core
 import os
 import subprocess
-import airinstaller.airinstaller as installer
+import airmanager.airmanager as installer
 import threading
 
-RSRC="/usr/share/air-installer/rsrc/"
+RSRC="/usr/share/air-manager/rsrc/"
 
-CSS_FILE=RSRC + "air-installer.css"
+CSS_FILE=RSRC + "air-manager.css"
 
 class ManageBox(Gtk.ScrolledWindow):
 	def __init__(self):
@@ -19,7 +19,7 @@ class ManageBox(Gtk.ScrolledWindow):
 		self.grid=Gtk.Grid()
 		self.set_css_info()
 		self.core=Core.Core.get_core()
-		self.airinstaller=installer.AirInstaller()	
+		self.airinstaller=installer.AirManager()	
 		self.listbox=Gtk.ListBox()
 		self.listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 		layout=Gtk.Layout()
@@ -161,7 +161,7 @@ class ManageBox(Gtk.ScrolledWindow):
 		sw_remove_err=1
 #		sw_remove=self.airinstaller.remove_air_app(air_data)
 		try:
-			sw_remove_err=subprocess.check_call(['pkexec','/usr/share/air-installer/air-helper-installer.py','remove',air_data['air_id'],air_data['desktop']])
+			sw_remove_err=subprocess.check_call(['pkexec','/usr/bin/air-helper-installer.py','remove',air_data['air_id'],air_data['desktop']])
 		except Exception as e:
 			self._debug(e)
 		if sw_remove_err:

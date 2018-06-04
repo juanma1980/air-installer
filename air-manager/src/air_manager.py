@@ -19,7 +19,7 @@ RSRC="/usr/share/air-manager/rsrc/"
 CSS_FILE=RSRC + "air-manager.css"
 
 
-class AirInstaller:
+class AirManagerGui:
 	
 	def __init__(self):
 
@@ -35,7 +35,7 @@ class AirInstaller:
 		builder.add_from_file(ui_path)
 		
 		self.main_window=builder.get_object("main_window")
-		self.main_window.set_title("Air Installer")
+		self.main_window.set_title("Air Manager")
 		self.main_box=builder.get_object("main_box")
 		self.exit_button=builder.get_object("exit_button")
 		
@@ -104,6 +104,6 @@ class AirInstaller:
 
 if __name__=="__main__":
 	
-	airman=AirInstaller()
+	airman=AirManagerGui()
 	airman.start_gui()
 	

@@ -179,7 +179,7 @@ class confirmDialog(Gtk.Window):
 			#Copy the icon to temp folder
 			self.pb.savev(tmp_icon,'png',[""],[""])
 			try:
-				ins=subprocess.check_call(['pkexec','/usr/share/air-installer/air-helper-installer.py','install',air_file,tmp_icon])
+				ins=subprocess.check_call(['pkexec','/usr/bin/air-helper-installer.py','install',air_file,tmp_icon])
 				os.path.remove(tmp_icon)
 			except subprocess.CalledProcessError as e:
 				self._debug(e)

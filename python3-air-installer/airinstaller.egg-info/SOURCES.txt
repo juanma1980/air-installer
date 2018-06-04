@@ -1,7 +1,0 @@
-setup.py
-python3-air-installer/airinstaller/__init__.py
-python3-air-installer/airinstaller/airinstaller.py
-python3-air-installer/airinstaller.egg-info/PKG-INFO
-python3-air-installer/airinstaller.egg-info/SOURCES.txt
-python3-air-installer/airinstaller.egg-info/dependency_links.txt
-python3-air-installer/airinstaller.egg-info/top_level.txt
