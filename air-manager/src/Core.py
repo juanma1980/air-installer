@@ -39,7 +39,7 @@ class Core:
 		
 		# Main window must be the last one
 		self.dprint("Creating airInstaller...")
-		self.airman=air_manager.AirInstaller()
+		self.airman=air_manager.AirManagerGui()
 		
 		self.airman.load_gui()
 		self.airman.start_gui()

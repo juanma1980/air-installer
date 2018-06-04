@@ -24,7 +24,7 @@ from setuptools import setup, find_packages
 
 if __name__ == '__main__':
 
-    setup(name='airinstaller',
+    setup(name='air_manager',
         version='0.1',
         description='Python3 lib for install air apps',
         long_description="""""",
@@ -37,8 +37,8 @@ if __name__ == '__main__':
         license='GPL',
         platforms='UNIX',
 #        scripts = [''],
-		package_dir = {'':'python3-air-installer'},
-        packages = find_packages("python3-air-installer"),
+		package_dir = {'':'python3-air-manager'},
+        packages = find_packages("python3-air-manager"),
         data_files = [],
         classifiers=[
                 'Development Status :: 4 - Beta',
@@ -50,7 +50,4 @@ if __name__ == '__main__':
                 'Topic :: Air apps installer',
                 ],
     )
-    print("*****************")
-    print(find_packages("python3-air-installer"))
-    print("*****************")
 

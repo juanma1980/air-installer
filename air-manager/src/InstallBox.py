@@ -18,7 +18,7 @@ from os.path import splitext
 import subprocess
 import tempfile
 
-import airinstaller.airinstaller as installer
+import airmanager.airmanager as installer
 
 import gettext
 gettext.textdomain('air-manager')
@@ -26,9 +26,9 @@ _ = gettext.gettext
 
 
 
-RSRC="/usr/share/air-installer/rsrc/"
+RSRC="/usr/share/air-manager/rsrc/"
 
-CSS_FILE=RSRC + "air-installer.css"
+CSS_FILE=RSRC + "air-manager.css"
 DROP_FILE=RSRC+"drop_file.png"
 DROP_CORRECT=RSRC+"drop_file_correct.png"
 DROP_INCORRECT=RSRC+"drop_file_incorrect.png"
@@ -47,8 +47,8 @@ class InstallBox(Gtk.VBox):
 		self.commonFunc=CommonFunc()
 		
 		builder=Gtk.Builder()
-		builder.set_translation_domain('air-installer')
-		ui_path=RSRC + "air-installer.ui"
+		builder.set_translation_domain('air-manager')
+		ui_path=RSRC + "air-manager.ui"
 		builder.add_from_file(ui_path)
 
 		self.lbl_air=builder.get_object("install_label")
@@ -134,7 +134,7 @@ class InstallBox(Gtk.VBox):
 			self.drop_area.set_from_file(DROP_CORRECT)
 			self.install_button.set_sensitive(True)
 			self.lbl_drop.set_markup(_("<b>Selected app:</b>\n%s")%os.path.basename(self.drop_area.air_file))
-			air_info=installer.AirInstaller().get_air_info(self.drop_area.air_file)
+			air_info=installer.AirManager().get_air_info(self.drop_area.air_file)
 			self.img_icon.set_from_pixbuf(air_info['pb'])
 			self.pb=air_info['pb']
 		dw.destroy()
@@ -227,7 +227,7 @@ class InstallBox(Gtk.VBox):
 		self.install_err=True
 		subprocess.check_call(['/usr/bin/xhost','+'])
 		try:
-			ins=subprocess.check_call(['pkexec','/usr/share/air-installer/air-helper-installer.py','install',air_file,icon])
+			ins=subprocess.check_call(['pkexec','/usr/bin/air-helper-installer.py','install',air_file,icon])
 			self.install_err=False
 		except Exception as e:
 			self._debug(e)
@@ -281,7 +281,7 @@ class DropArea(Gtk.Image):
 			self.air_file=text[1]
 			if self.info_label:
 				self.info_label.set_markup(_("<b>Selected app:</b>\n%s")%os.path.basename(self.air_file))
-			air_info=installer.AirInstaller().get_air_info(self.air_file)
+			air_info=installer.AirManager().get_air_info(self.air_file)
 			self.img_icon.set_from_pixbuf(air_info['pb'])
 			InstallBox.pb=air_info['pb']
 			self._debug("File %s"%self.air_file)

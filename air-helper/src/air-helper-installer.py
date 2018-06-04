@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import  airinstaller.airinstaller as installer
+import  airmanager.airmanager as installer
 import sys
 import subprocess
 
-installer=installer.AirInstaller()
+installer=installer.AirManager()
 err=0
 dbg=False
 

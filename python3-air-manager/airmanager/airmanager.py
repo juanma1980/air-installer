@@ -11,9 +11,9 @@ import urllib.request as url
 import glob
 from gi.repository import GdkPixbuf
 
-LOG='/tmp/air_installer.log'
+LOG='/tmp/air_manager.log'
 
-class AirInstaller():
+class AirManager():
 	def __init__(self):
 		self.dbg=True
 		self.default_icon="/usr/share/air-installer/rsrc/air-installer_icon.png"
