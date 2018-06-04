@@ -138,9 +138,9 @@ class AirManager():
 		if sw_download==False:
 			self._debug("Adobeair failed to install")
 		#Now install the sdk
-		self._install_adobeair_sdk()
 		if not os.path.isdir(self.adobeair_folder):
 			os.makedirs(self.adobeair_folder)
+		self._install_adobeair_sdk()
 
 	def _install_air_package(self,air_file):
 		sw_err=1
@@ -264,18 +264,35 @@ Categories=Application;Education;Development;ComputerScience;\n\
 	#def _generate_desktop_sdk
 
 	def _install_adobeair_sdk(self):
-		if os.path.isfile(self.adobeairsdk_folder+'adobe-air/adobe-air'):
-			return
+			#		if os.path.isfile(self.adobeairsdk_folder+'adobe-air/adobe-air'):
+#			return
 		self._install_adobeair_depends()
 		self._debug("Installing Adobe Air SDK")
-		subprocess.call(["zero-lliurex-wget","http://lliurex.net/recursos-edu/misc/AdobeAIRSDK.tbz2","/tmp"])
-		os.makedirs ("/opt/adobe-air-sdk")
-		subprocess.call(["tar","jxf","/tmp/AdobeAIRSDK.tbz2","-C","/opt/adobe-air-sdk"])
+		adobeair_url="http://lliurex.net/recursos-edu/misc/AdobeAIRSDK.tbz2"
+#		adobeair_url="http://lliurex.net/recursos-edu/misc/adobe-air.tar.gz"
+		req=url.Request(adobeair_url,headers={'User-Agent':'Mozilla/5.0'})
+		try:
+			adobeair_file=url.urlopen(req)
+		except Exception as e:
+			self._debug(e)
+			return False
+		(tmpfile,tmpfile_name)=tempfile.mkstemp()
+		os.close(tmpfile)
+		self._debug("Download %s"%tmpfile_name)
+		with open(tmpfile_name,'wb') as output:
+			output.write(adobeair_file.read())
+		try:
+			os.makedirs ("/opt/adobe-air-sdk")
+		except:
+			pass
+		subprocess.call(["tar","jxf",tmpfile_name,"-C","/opt/adobe-air-sdk"])
+		st=os.stat("/opt/adobe-air-sdk/adobe-air/adobe-air")
+		os.chmod("/opt/adobe-air-sdk/adobe-air/adobe-air",st.st_mode | 0o111)
 
-		self._debug("Downloading Air Runtime SDK from Archlinux")
-		subprocess.call(["zero-lliurex-wget","http://lliurex.net/recursos-edu/misc/adobe-air.tar.gz","/tmp"])
-		subprocess.call(["tar","xvf","/tmp/adobe-air.tar.gz","-C","/opt/adobe-air-sdk"])
-		subprocess.call(["chmod","+x","/opt/adobe-air-sdk/adobe-air/adobe-air"])
+#		self._debug("Downloading Air Runtime SDK from Archlinux")
+#	subprocess.call(["zero-lliurex-wget","http://lliurex.net/recursos-edu/misc/adobe-air.tar.gz","/tmp"])
+#	subprocess.call(["tar","xvf","/tmp/adobe-air.tar.gz","-C","/opt/adobe-air-sdk"])
+#	subprocess.call(["chmod","+x","/opt/adobe-air-sdk/adobe-air/adobe-air"])
 	#def _install_adobeair_sdk
 
 	def _install_adobeair(self):
@@ -286,7 +303,7 @@ Categories=Application;Education;Development;ComputerScience;\n\
 			try:
 				adobeair_file=url.urlopen(req)
 			except Exception as e:
-				self._debug(e)
+				self._debug('Donwload err: %s'%e)
 				return False
 			(tmpfile,tmpfile_name)=tempfile.mkstemp()
 			os.close(tmpfile)
@@ -306,8 +323,6 @@ Categories=Application;Education;Development;ComputerScience;\n\
 	#def _install_adobeair
 
 	def _install_adobeair_depends(self):
-		self._debug("Removing old versions...")
-		subprocess.call(["apt-get","-y","--purge","remove","adobeair"])
 		subprocess.call(["apt-get","-q","update"])
 		lib_folder='x86_64-linux-gnu'
 		if os.uname().machine=='x86_64':
