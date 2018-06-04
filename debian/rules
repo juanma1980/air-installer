@@ -8,7 +8,7 @@
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
-export PYBUILD_NAME=lliurex-store
+export PYBUILD_NAME=air-manager
 
 %:
 	dh $@ --with llxsrc,python3,llxdev --buildsystem pybuild
