@@ -7,10 +7,9 @@ import subprocess
 import airinstaller.airinstaller as installer
 import threading
 
-RSRC="/usr/share/air-installer/"
-RSRC="/home/lliurex/trabajo/git/air-installer/air-installer/"
+RSRC="/usr/share/air-installer/rsrc/"
 
-CSS_FILE=RSRC + "src/air-installer.css"
+CSS_FILE=RSRC + "air-installer.css"
 
 class ManageBox(Gtk.ScrolledWindow):
 	def __init__(self):
@@ -67,8 +66,8 @@ class ManageBox(Gtk.ScrolledWindow):
 	#def set_css_info	
 
 	def _load_installed_apps(self):
-		img_remove=RSRC+'/rsrc/trash.svg'
-		img_run=RSRC+'/rsrc/run.svg'
+		img_remove=RSRC+'trash.svg'
+		img_run=RSRC+'run.svg'
 		spacing=6
 		total_apps=len(self.airinstaller.get_installed_apps())
 		count=0

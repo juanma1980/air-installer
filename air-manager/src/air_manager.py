@@ -15,8 +15,8 @@ import Core
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
-RSRC="/usr/share/air-installer/"
-CSS_FILE=RSRC + "air-installer.css"
+RSRC="/usr/share/air-manager/rsrc/"
+CSS_FILE=RSRC + "air-manager.css"
 
 
 class AirInstaller:
@@ -31,7 +31,7 @@ class AirInstaller:
 	def load_gui(self):
 		
 		builder=Gtk.Builder()
-		ui_path=RSRC + "rsrc/air-installer.ui"
+		ui_path=RSRC + "air-manager.ui"
 		builder.add_from_file(ui_path)
 		
 		self.main_window=builder.get_object("main_window")

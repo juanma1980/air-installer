@@ -15,8 +15,8 @@ import gettext
 gettext.textdomain('air-installer')
 _ = gettext.gettext
 
-RSRC="/usr/share/air-installer/rsrc"
-CSS_FILE=RSRC + "air-installer.css"
+RSRC="/usr/share/air-manager/rsrc"
+CSS_FILE=RSRC + "air-manager.css"
 GTK_SPACING=6
 
 class confirmDialog(Gtk.Window):
