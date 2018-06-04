@@ -26,13 +26,12 @@ _ = gettext.gettext
 
 
 
-RSRC="/usr/share/air-installer/"
+RSRC="/usr/share/air-installer/rsrc/"
 
 CSS_FILE=RSRC + "air-installer.css"
-DROP_FILE=RSRC+"rsrc/drop_file.png"
-DROP_CORRECT=RSRC+"rsrc/drop_file_correct.png"
-DROP_INCORRECT=RSRC+"rsrc/drop_file_incorrect.png"
-OUTPUT_FILE="_pmb.sql"
+DROP_FILE=RSRC+"drop_file.png"
+DROP_CORRECT=RSRC+"drop_file_correct.png"
+DROP_INCORRECT=RSRC+"drop_file_incorrect.png"
 DRAG_ACTION = Gdk.DragAction.COPY
 GTK_SPACING=6
 
@@ -40,7 +39,7 @@ class InstallBox(Gtk.VBox):
 	
 	def __init__(self):
 		Gtk.VBox.__init__(self)
-		self.DROP_CORRECT=RSRC+"rsrc/drop_file_correct.png"
+		self.DROP_CORRECT=RSRC+"drop_file_correct.png"
 		self.pb=GdkPixbuf.Pixbuf()
 		self.air_file=''
 		
@@ -49,7 +48,7 @@ class InstallBox(Gtk.VBox):
 		
 		builder=Gtk.Builder()
 		builder.set_translation_domain('air-installer')
-		ui_path=RSRC + "rsrc/air-installer.ui"
+		ui_path=RSRC + "air-installer.ui"
 		builder.add_from_file(ui_path)
 
 		self.lbl_air=builder.get_object("install_label")
@@ -83,7 +82,7 @@ class InstallBox(Gtk.VBox):
 		self.drop.add(drop_box)	
 		self.drop.set_margin_top(12)
 				
-		self.img_icon.set_from_file(RSRC+"rsrc/air-installer_icon.png")
+		self.img_icon.set_from_file(RSRC+"air-installer_icon.png")
 		self.pb=self.img_icon.get_pixbuf()
 
 		lbl_text=_("Click to <b>select an icon</b> for the app or use the app's default icon")
