@@ -9,21 +9,21 @@ X-Python3-Version: >= 3.5
 
 Package: air-manager
 Architecture: all
-Depends: ${misc:Depends}, ${python3:Depends}, python3-air-installer (= ${binary:Version})
+Depends: ${misc:Depends}, ${python3:Depends}, python3-air-manager (= ${binary:Version})
 Description: Air app manager
 
 Package: air-installer
 Architecture: all
-Depends: ${misc:Depends}, python3-air-installer
+Depends: ${misc:Depends}, python3-air-manager
 Description: Air installer dialog
 
 Package: air-helper
 Architecture: all
-Depends: ${misc:Depends}, python3-air-installer
+Depends: ${misc:Depends}, python3-air-manager
 Description: Needed for install/manage air packages
 
 Package: python3-air-manager
 Architecture: all
-Depends: ${misc:Depends}, ${python3:Depends}, gir1.2-appstreamglib-1.0 (>=0.5.13), appstream (>=0.9.4), libappstream4 (>=0.10.0),python3-aptdaemon.pkcompat,python3-bs4,gir1.2-snapd-1(>=1.23),libsnapd-glib1(>=1.23)
+Depends: ${misc:Depends}, ${python3:Depends} 
 Description: Libs for air-installer and air-manager
 
