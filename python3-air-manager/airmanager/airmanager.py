@@ -69,7 +69,8 @@ class AirManager():
 					self._debug("Installed in %s"%(basedir_name))
 				else:
 					self._debug("%s Not Installed!!!"%(basedir_name))
-			elif not sw_err and icon!=self.default_icon:
+#			elif not sw_err and icon!=self.default_icon:
+			elif not sw_err:
 				#Modify desktop with icon
 				hicolor_icon='/usr/share/icons/hicolor/48x48/apps/%s.png'%basedir_name
 				shutil.copyfile (icon,hicolor_icon)
@@ -268,24 +269,27 @@ Categories=Application;Education;Development;ComputerScience;\n\
 #			return
 		self._install_adobeair_depends()
 		self._debug("Installing Adobe Air SDK")
-		adobeair_url="http://lliurex.net/recursos-edu/misc/AdobeAIRSDK.tbz2"
-#		adobeair_url="http://lliurex.net/recursos-edu/misc/adobe-air.tar.gz"
-		req=url.Request(adobeair_url,headers={'User-Agent':'Mozilla/5.0'})
-		try:
-			adobeair_file=url.urlopen(req)
-		except Exception as e:
-			self._debug(e)
-			return False
-		(tmpfile,tmpfile_name)=tempfile.mkstemp()
-		os.close(tmpfile)
-		self._debug("Download %s"%tmpfile_name)
-		with open(tmpfile_name,'wb') as output:
-			output.write(adobeair_file.read())
-		try:
-			os.makedirs ("/opt/adobe-air-sdk")
-		except:
-			pass
-		subprocess.call(["tar","jxf",tmpfile_name,"-C","/opt/adobe-air-sdk"])
+		adobeair_urls=["http://lliurex.net/recursos-edu/misc/AdobeAIRSDK.tbz2","http://lliurex.net/recursos-edu/misc/adobe-air.tar.gz"]
+		for adobeair_url in adobeair_urls:
+			req=url.Request(adobeair_url,headers={'User-Agent':'Mozilla/5.0'})
+			try:
+				adobeair_file=url.urlopen(req)
+			except Exception as e:
+				self._debug(e)
+				return False
+			(tmpfile,tmpfile_name)=tempfile.mkstemp()
+			os.close(tmpfile)
+			self._debug("Download %s"%tmpfile_name)
+			with open(tmpfile_name,'wb') as output:
+				output.write(adobeair_file.read())
+			try:
+				os.makedirs ("/opt/adobe-air-sdk")
+			except:
+				pass
+			if adobeair_url.endswith(".tar.gz"):
+				subprocess.call(["tar","zxf",tmpfile_name,"-C","/opt/adobe-air-sdk"])
+			else:
+				subprocess.call(["tar","jxf",tmpfile_name,"-C","/opt/adobe-air-sdk"])
 		st=os.stat("/opt/adobe-air-sdk/adobe-air/adobe-air")
 		os.chmod("/opt/adobe-air-sdk/adobe-air/adobe-air",st.st_mode | 0o111)
 
@@ -296,30 +300,32 @@ Categories=Application;Education;Development;ComputerScience;\n\
 	#def _install_adobeair_sdk
 
 	def _install_adobeair(self):
-			self._install_adobeair_depends()
-			self._debug("Installing Adobe Air")
-			adobeair_url="http://airdownload.adobe.com/air/lin/download/2.6/AdobeAIRInstaller.bin"
-			req=url.Request(adobeair_url,headers={'User-Agent':'Mozilla/5.0'})
-			try:
-				adobeair_file=url.urlopen(req)
-			except Exception as e:
-				self._debug('Donwload err: %s'%e)
+			if self._install_adobeair_depends():
+				self._debug("Installing Adobe Air")
+				adobeair_url="http://airdownload.adobe.com/air/lin/download/2.6/AdobeAIRInstaller.bin"
+				req=url.Request(adobeair_url,headers={'User-Agent':'Mozilla/5.0'})
+				try:
+					adobeair_file=url.urlopen(req)
+				except Exception as e:
+					self._debug('Donwload err: %s'%e)
+					return False
+				(tmpfile,tmpfile_name)=tempfile.mkstemp()
+				os.close(tmpfile)
+				with open(tmpfile_name,'wb') as output:
+					output.write(adobeair_file.read())
+				st=os.stat(tmpfile_name)
+				os.chmod(tmpfile_name,st.st_mode | 0o111)
+#				subprocess.call([tmpfile_name,"-silent","-eulaAccepted","-pingbackAllowed"])
+				os.system("DISPLAY=:0 " + tmpfile_name + " -silent -eulaAccepted -pingbackAllowed")
+				os.remove(tmpfile_name)
+				#Remove symlinks
+				if os.path.isfile("/usr/lib/libgnome-keyring.so.0"):
+					os.remove("/usr/lib/libgnome-keyring.so.0")
+				if os.path.isfile("/usr/lib/libgnome-keyring.so.0.2.0"):
+					os.remove("/usr/lib/libgnome-keyring.so.0.2.0")
+				return True
+			else:
 				return False
-			(tmpfile,tmpfile_name)=tempfile.mkstemp()
-			os.close(tmpfile)
-			with open(tmpfile_name,'wb') as output:
-				output.write(adobeair_file.read())
-			st=os.stat(tmpfile_name)
-			os.chmod(tmpfile_name,st.st_mode | 0o111)
-#			subprocess.call([tmpfile_name,"-silent","-eulaAccepted","-pingbackAllowed"])
-			os.system("DISPLAY=:0 " + tmpfile_name + " -silent -eulaAccepted -pingbackAllowed")
-			os.remove(tmpfile_name)
-			#Remove symlinks
-			if os.path.isfile("/usr/lib/libgnome-keyring.so.0"):
-				os.remove("/usr/lib/libgnome-keyring.so.0")
-			if os.path.isfile("/usr/lib/libgnome-keyring.so.0.2.0"):
-				os.remove("/usr/lib/libgnome-keyring.so.0.2.0")
-			return True
 	#def _install_adobeair
 
 	def _install_adobeair_depends(self):
@@ -327,7 +333,13 @@ Categories=Application;Education;Development;ComputerScience;\n\
 		lib_folder='x86_64-linux-gnu'
 		if os.uname().machine=='x86_64':
 			self._debug("Installing i386 libs")
-			subprocess.call(["apt-get","-q","-y","install","libgtk2.0-0:i386","libstdc++6:i386","libxml2:i386","libxslt1.1:i386","libcanberra-gtk-module:i386","gtk2-engines-murrine:i386","libqt4-qt3support:i386","libgnome-keyring0:i386","libnss-mdns:i386","libnss3:i386","libatk-adaptor:i386","libgail-common:i386"])
+			ret=subprocess.call(["apt-get","-q","-y","install","libgtk2.0-0:i386","libstdc++6:i386","libxml2:i386","libxslt1.1:i386","libcanberra-gtk-module:i386","gtk2-engines-murrine:i386","libqt4-qt3support:i386","libgnome-keyring0:i386","libnss-mdns:i386","libnss3:i386","libatk-adaptor:i386","libgail-common:i386"])
+			if ret!=0:
+				ret=subprocess.call(["dpkg","--add-architecture","i386"])
+				ret=subprocess.call(["apt-get","-q","-y","install","libgtk2.0-0:i386","libstdc++6:i386","libxml2:i386","libxslt1.1:i386","libcanberra-gtk-module:i386","gtk2-engines-murrine:i386","libqt4-qt3support:i386","libgnome-keyring0:i386","libnss-mdns:i386","libnss3:i386","libatk-adaptor:i386","libgail-common:i386"])
+			if ret!=0:
+				return False
+				
 		else:
 			lib_folder='i386-linux-gnu'
 			subprocess.call(["apt-get","-q","-y","install","libgtk2.0-0","libxslt1.1","libxml2","libnss3","libxaw7","libgnome-keyring0","libatk-adaptor","libgail-common"])
@@ -341,6 +353,7 @@ Categories=Application;Education;Development;ComputerScience;\n\
 			os.symlink("/usr/lib/"+lib_folder+"/libgnome-keyring.so.0.2.0","/usr/lib/libgnome-keyring.so.0.2.0")
 		except Exception as e:
 			self._debug(e)
+		return True
 	#def _install_adobeair_depends
 
 	def _recompile_for_certificate_issue(self,air_file):
@@ -374,7 +387,7 @@ Categories=Application;Education;Development;ComputerScience;\n\
 	def _unzip_air_file(self,air_file):
 		cwd=os.getcwd()
 		tmpdir=tempfile.mkdtemp()
-		self._debug("Extracting to %s"%tmpdir)
+		self._debug("Extracting %s to %s"%(air_file,tmpdir))
 		os.chdir(tmpdir)
 		air_pkg=zipfile.ZipFile(air_file,'r')
 		for file_to_unzip in air_pkg.infolist():
@@ -388,41 +401,43 @@ Categories=Application;Education;Development;ComputerScience;\n\
 
 	def get_installed_apps(self):
 		installed_apps={}
-		for app_dir in os.listdir(self.adobeair_folder):
-			self._debug("Testing %s"%app_dir)
-			app_desktop=''
-			if os.path.isdir(self.adobeair_folder+app_dir+'/bin') or os.path.isfile(self.adobeair_folder+app_dir+'/'+app_dir+'.air'):
-				#Search the desktop of the app
-				self._debug("Searching desktop %s"%'/usr/share/applications/'+app_dir+'.desktop')
-				sw_desktop=False
-				if os.path.isdir(self.adobeair_folder+app_dir+'/share/META-INF/AIR'):
-					for pkg_file in os.listdir(self.adobeair_folder+app_dir+'/share/META-INF/AIR'):
-						if pkg_file.endswith('.desktop'):
-							app_desktop='/usr/share/applications/'+pkg_file
-							sw_desktop=True
-							break
-				if sw_desktop==False:
-					if os.path.isfile('/usr/share/applications/'+app_dir+'.desktop'):
-						app_desktop='/usr/share/applications/'+app_dir+'.desktop'
-					elif os.path.isfile('/usr/share/applications/'+app_dir.lower()+'.desktop'):
-						app_desktop='/usr/share/applications/'+app_dir.lower()+'.desktop'
-				#Get the app_id
-				self._debug("Searching id %s"%self.adobeair_folder+app_dir+'/share/application.xml')
-				if os.path.isfile(self.adobeair_folder+app_dir+'/share/application.xml'):
-					f=open(self.adobeair_folder+app_dir+'/share/application.xml','r')
-					flines=f.readlines()
+		if os.path.isdir(self.adobeair_folder):
+			for app_dir in os.listdir(self.adobeair_folder):
+				self._debug("Testing %s"%app_dir)
+				app_desktop=''
+				if os.path.isdir(self.adobeair_folder+app_dir+'/bin') or os.path.isfile(self.adobeair_folder+app_dir+'/'+app_dir+'.air'):
+					#Search the desktop of the app
+					self._debug("Searching desktop %s"%'/usr/share/applications/'+app_dir+'.desktop')
+					sw_desktop=False
+					if os.path.isdir(self.adobeair_folder+app_dir+'/share/META-INF/AIR'):
+						for pkg_file in os.listdir(self.adobeair_folder+app_dir+'/share/META-INF/AIR'):
+							if pkg_file.endswith('.desktop'):
+								app_desktop='/usr/share/applications/'+pkg_file
+								sw_desktop=True
+								break
+					if sw_desktop==False:
+						if os.path.isfile('/usr/share/applications/'+app_dir+'.desktop'):
+							app_desktop='/usr/share/applications/'+app_dir+'.desktop'
+						elif os.path.isfile('/usr/share/applications/'+app_dir.lower()+'.desktop'):
+							app_desktop='/usr/share/applications/'+app_dir.lower()+'.desktop'
+					#Get the app_id
 					app_id=''
-					for fline in flines:
-						fline=fline.strip()
-						if fline.startswith('<id>'):
-							app_id=fline
-							app_id=app_id.replace('<id>','')
-							app_id=app_id.replace('</id>','')
-							break
-					f.close()
-				elif os.path.isfile(self.adobeair_folder+app_dir+'/'+app_dir+'.air'):
-					app_id=app_dir+'.air'
-				installed_apps[app_dir]={'desktop':app_desktop,'air_id':app_id}
+					self._debug("Searching id %s"%self.adobeair_folder+app_dir+'/share/application.xml')
+					if os.path.isfile(self.adobeair_folder+app_dir+'/share/application.xml'):
+						f=open(self.adobeair_folder+app_dir+'/share/application.xml','r')
+						flines=f.readlines()
+						app_id=''
+						for fline in flines:
+							fline=fline.strip()
+							if fline.startswith('<id>'):
+								app_id=fline
+								app_id=app_id.replace('<id>','')
+								app_id=app_id.replace('</id>','')
+								break
+						f.close()
+					elif os.path.isfile(self.adobeair_folder+app_dir+'/'+app_dir+'.air'):
+						app_id=app_dir+'.air'
+					installed_apps[app_dir]={'desktop':app_desktop,'air_id':app_id}
 		return installed_apps
 	#def get_installed_apps
 
@@ -479,6 +494,7 @@ Categories=Application;Education;Development;ComputerScience;\n\
 
 	def get_air_info(self,air_file):
 		air_info={}
+		self._debug("Info for %s"%air_file)
 		tmpdir=self._unzip_air_file(air_file)
 		cwd=os.getcwd()
 		os.chdir(tmpdir+'/META-INF/AIR')

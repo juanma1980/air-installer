@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+<id>air-installer</id>
+<metadata_license>CC0-1.0</metadata_license>
+<name>Air Manager</name>
+<name xml:lang="ca_ES.UTF-8@valencia">Air Installer</name>
+<name xml:lang="ca_ES@valencia">Air Installer</name>
+<name xml:lang="ca">Air Installer</name>
+<name xml:lang="es">Air Installer</name>
+<summary>Tool for install Air packages</summary>
+<summary xml:lang="es">Instalador de paquetes Air</summary>
+<summary xml:lang="ca_ES@valencia">Instal·lador de paquets Air</summary>
+<summary xml:lang="ca_ES.UTF-8@valencia">Instal·lador de paquets Air</summary>
+<summary xml:lang="ca">Instal·lador de paquets Air</summary>
+<description>
+<p>Install Air packages double-clicking on them</p>
+<p xml:lang="es">Lanza el instalador de paquetes Adobe Air al hacer doble click sobre el paquete.</p>
+<p xml:lang="ca_ES@valencia">Executa l'instal·lador de paquets Adobe Air al fer doble click sobre el paquet</p>
+<p xml:lang="ca_ES.UTF-8@valencia">Executa l'instal·lador de paquets Adobe Air al fer doble click sobre el paquet</p>
+<p xml:lang="ca">Executa l'instal·lador de paquets Adobe Air al fer doble click sobre el paquet</p>
+</description>
+<categories>
+<category>GNOME</category>
+<category>GTK</category>
+<category>Administration</category>
+<category>LliureX</category>
+
+</categories>
+<icon type="stock">air-installer</icon>
+<provides><binary>air-installer</binary></provides>
+<keywords>
+<keyword>air</keyword>
+<keyword>installer</keyword>
+<keyword>Air</keyword>
+<keyword>installer</keyword>
+<keyword>Adobe</keyword>
+</keywords>
+<keywords xml:lang="ca_ES.UTF-8@valencia">
+<keyword>Instal·la</keyword>
+<keyword>aplicació</keyword>
+</keywords>
+<keywords xml:lang="ca_ES@valencia">
+<keyword>Instal·la</keyword>
+<keyword>aplicació</keyword>
+</keywords>
+<keywords xml:lang="ca">
+<keyword>Instal·la</keyword>
+<keyword>aplicació</keyword>
+</keywords>
+<keywords xml:lang="es">
+<keyword>Instalar</keyword>
+<keyword>aplicación</keyword>
+</keywords>
+</component>

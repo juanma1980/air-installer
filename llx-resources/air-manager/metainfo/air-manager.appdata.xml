@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+<id>air-manager</id>
+<metadata_license>CC0-1.0</metadata_license>
+<name>Air Manager</name>
+<name xml:lang="ca_ES.UTF-8@valencia">Air Manager</name>
+<name xml:lang="ca_ES@valencia">Air Manager</name>
+<name xml:lang="ca">Air Manager</name>
+<name xml:lang="es">Air Manager</name>
+<summary>Manage your installed air packages</summary>
+<summary xml:lang="es">Gestiona los paquetes Air instalados</summary>
+<summary xml:lang="ca_ES@valencia">Gestiona els paquets Air instal·lats</summary>
+<summary xml:lang="ca_ES.UTF-8@valencia">Gestiona els paquets Air instal·lats</summary>
+<summary xml:lang="ca">Manage your installed air packages</summary>
+<description>
+<p>Manage your installed air packages</p>
+<p xml:lang="es">Gestiona los paquetes Air instalados</p>
+<p xml:lang="ca_ES@valencia">Gestiona els paquets Air instal·lats</p>
+<p xml:lang="ca_ES.UTF-8@valencia">Gestiona els paquets Air instal·lats</p>
+<p xml:lang="ca">Manage your installed air packages</p>
+</description>
+<categories>
+<category>GNOME</category>
+<category>GTK</category>
+<category>Administration</category>
+<category>LliureX</category>
+
+</categories>
+<icon type="stock">air-manager</icon>
+<provides><binary>air-manager</binary></provides>
+<keywords>
+<keyword>air</keyword>
+<keyword>manager</keyword>
+<keyword>Air</keyword>
+<keyword>Manager</keyword>
+<keyword>Adobe</keyword>
+<keyword>software</keyword>
+</keywords>
+<keywords xml:lang="ca_ES.UTF-8@valencia">
+<keyword>programari</keyword>
+<keyword>gestió</keyword>
+</keywords>
+<keywords xml:lang="ca_ES@valencia">
+<keyword>programari</keyword>
+<keyword>gestió</keyword>
+</keywords>
+<keywords xml:lang="ca">
+<keyword>programari</keyword>
+<keyword>gestió</keyword>
+</keywords>
+<keywords xml:lang="es">
+<keyword>gestión</keyword>
+</keywords>
+</component>
