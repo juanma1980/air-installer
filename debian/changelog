@@ -1,3 +1,63 @@
+air-manager (0.1.1.9) xenial; urgency=medium
+
+  * Added icon for mimetype
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Wed, 06 Jun 2018 08:49:32 +0200
+
+air-manager (0.1.1.8) xenial; urgency=medium
+
+  * Fix desktop-mime (again) 
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 05 Jun 2018 17:29:41 +0200
+
+air-manager (0.1.1.7) xenial; urgency=medium
+
+  * Fix air-image desktop typo
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 05 Jun 2018 16:55:59 +0200
+
+air-manager (0.1.1.6) xenial; urgency=medium
+
+  * Fix desktop-mime
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 05 Jun 2018 16:02:33 +0200
+
+air-manager (0.1.1.5) xenial; urgency=medium
+
+  * Changed air-installer.postinstall
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 05 Jun 2018 13:56:58 +0200
+
+air-manager (0.1.1.4) xenial; urgency=medium
+
+  * Minor bugfix for bionic
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 05 Jun 2018 12:55:34 +0200
+
+air-manager (0.1.1.3) xenial; urgency=medium
+
+  * Fix air-installer metainfo
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 05 Jun 2018 10:14:43 +0200
+
+air-manager (0.1.1.2) xenial; urgency=medium
+
+  * Fix css font properties
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 05 Jun 2018 09:43:30 +0200
+
+air-manager (0.1.1.1) xenial; urgency=medium
+
+  * Fix depends
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 05 Jun 2018 09:22:05 +0200
+
+air-manager (0.1.1) xenial; urgency=medium
+
+  * Fix launchpad build
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 05 Jun 2018 09:05:24 +0200
+
 air-manager (0.1) xenial; urgency=medium
 
   * Initial release.
