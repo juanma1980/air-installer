@@ -1,0 +1,19 @@
+[Desktop Entry]
+Name=Air Installer
+Name[ca_ES.UTF-8@valencia]=Instal·lador de paquets Air
+Name[ca_ES@valencia]=Instal·lador de paquets Air
+Name[ca]=Instal·lador de paquets Air
+Name[es]=Instalador de paquetes Air
+Comment=Install Air packages
+Comment[ca_ES.UTF-8@valencia]=Instal·la paquets Air al sistema
+Comment[ca]=Instal·la paquets Air al sistema
+Comment[es]=Instala paquetes Air en el sistema
+Comment[ca_ES@valencia]=Instal·la paquets Air al sistema
+Exec=/usr/bin/air-installer %U
+Terminal=false
+MimeType=application/x-air-installer
+Type=Application
+Icon=air-installer
+NoDisplay=true
+Comment=
+Categories=

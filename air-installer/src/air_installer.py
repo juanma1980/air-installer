@@ -8,6 +8,7 @@ import gi
 import threading
 import tempfile
 import time
+import airmanager.airmanager as installer
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, GdkPixbuf, Gdk, Gio, GObject,GLib
 
@@ -15,8 +16,8 @@ import gettext
 gettext.textdomain('air-installer')
 _ = gettext.gettext
 
-RSRC="/usr/share/air-manager/rsrc"
-CSS_FILE=RSRC + "air-manager.css"
+RSRC="/usr/share/air-installer/rsrc"
+CSS_FILE=RSRC + "air-installer.css"
 GTK_SPACING=6
 
 class confirmDialog(Gtk.Window):
@@ -29,6 +30,8 @@ class confirmDialog(Gtk.Window):
 	#def _debug
 
 	def _load_gui(self,air_file):
+		air_file_path=os.path.abspath(air_file)
+		self._debug("Installing %s (%s)"%(air_file,air_file_path))
 		file_name=os.path.basename(air_file)
 		Gtk.Window.__init__(self,title=_("Install air app"))
 		self.set_position(Gtk.WindowPosition.CENTER)
@@ -37,12 +40,12 @@ class confirmDialog(Gtk.Window):
 		#label #label_install{
 			padding: 6px;
 			margin:6px;
-			font: Roboto 12px;
+			font: 12px Roboto;
 		}
 		#label_install:insensitive{
 			padding: 6px;
 			margin:6px;
-			font: Roboto 12px;
+			font: 12px Roboto;
 			color:white;
 			background-image:-gtk-gradient (linear, left top, left bottom, from (#7ea8f2),to (#7ea8f2));
 			box-shadow: -0.5px 3px 2px #aaaaaa;
@@ -50,7 +53,7 @@ class confirmDialog(Gtk.Window):
 		#frame{
 			padding: 6px;
 			margin:6px;
-			font: Roboto 12px;
+			font: 12px Roboto;
 			background:white;
 		}
 		"""
@@ -90,6 +93,11 @@ class confirmDialog(Gtk.Window):
 		img_icon=Gtk.Image()
 		img_icon.set_from_file(RSRC+"/air-installer_icon.png")
 		self.pb=img_icon.get_pixbuf()
+		air_info=installer.AirManager().get_air_info(air_file_path)
+		if 'pb' in air_info.keys():
+			if air_info['pb']:
+				img_icon.set_from_pixbuf(air_info['pb'])
+				self.pb=air_info['pb']
 
 		lbl_text=_("<b>Select icon</b> for %s")%file_name
 		lbl_icon=Gtk.Label()
@@ -119,7 +127,7 @@ class confirmDialog(Gtk.Window):
 		self.box.attach_next_to(self.btn_install,self.btn_icon,Gtk.PositionType.BOTTOM,1,1)
 		self.box.attach_next_to(self.box_button,self.btn_install,Gtk.PositionType.BOTTOM,1,1)
 
-		self.btn_install.connect("clicked",self._begin_install_file,air_file)
+		self.btn_install.connect("clicked",self._begin_install_file,air_file_path)
 		self.btn_icon.connect("clicked",self._set_app_icon,img_icon)
 		btn_cancel.connect("clicked",Gtk.main_quit)
 		self.connect("destroy",Gtk.main_quit)
@@ -184,9 +192,10 @@ class confirmDialog(Gtk.Window):
 			except subprocess.CalledProcessError as e:
 				self._debug(e)
 				err=True
-			except exception as e:
+			except Exception as e:
 				self._debug(e)
-		except:
+		except Exception as e:
+			self._debug(e)
 			err=True
 		self.pulse.stop()
 		self.pulse.set_visible(False)

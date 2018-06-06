@@ -1,0 +1,18 @@
+[Desktop Entry]
+Name=Air Manager
+GenericName=Air Manager
+Comment=Manage your installed air packages
+Comment[es]=Gestiona los paquetes Air instalados
+Comment[ca_ES@valencia]=Gestiona els paquets Air instal·lats
+Comment[ca_ES.UTF-8@valencia]=Gestiona els paquets Air instal·lats
+Comment[ca]=Manage your installed air packages
+Exec=air-manager
+Terminal=false
+Type=Application
+Icon=air-manager
+Name[ca_ES.UTF-8@valencia]=Air Manager
+Name[ca_ES@valencia]=Air Manager
+Name[ca]=Air Manager
+Name[es]=Air Manager
+Categories=GNOME;GTK;LliureX-Administration;
+TryExec=/usr/bin/air-manager
