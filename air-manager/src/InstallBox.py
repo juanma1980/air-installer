@@ -55,6 +55,7 @@ class InstallBox(Gtk.VBox):
 		self.lbl_air.props.halign=Gtk.Align.START
 		#Declared here because DropArea needs this references
 		self.img_icon=Gtk.Image()
+		self.pb=self.img_icon.get_pixbuf()
 		self.lbl_drop=Gtk.Label()
 
 		self.main_box=builder.get_object("install_data_box")
@@ -195,6 +196,7 @@ class InstallBox(Gtk.VBox):
 		tmp_icon=tempfile.mkstemp()[1]
 		self._debug(tmp_icon)
 		#Copy the icon to temp folder
+		self.pb=self.img_icon.get_pixbuf()
 		self.pb.savev(tmp_icon,'png',[""],[""])
 		air_file=self.drop_area.air_file
 		self.install_t=threading.Thread(target=self.install,args=[air_file,tmp_icon])
@@ -231,6 +233,8 @@ class InstallBox(Gtk.VBox):
 			self.install_err=False
 		except Exception as e:
 			self._debug(e)
+		subprocess.check_output(["xdg-mime","install","/usr/share/mime/packages/x-air-installer.xml"])
+		subprocess.check_output(["xdg-mime","default","/usr/share/applications/air-installer.desktop","/usr/share/mime/packages/x-air-installer.xml"],input=b"")
 		subprocess.check_call(['/usr/bin/xhost','-'])
 	#def install
 	
@@ -283,7 +287,7 @@ class DropArea(Gtk.Image):
 				self.info_label.set_markup(_("<b>Selected app:</b>\n%s")%os.path.basename(self.air_file))
 			air_info=installer.AirManager().get_air_info(self.air_file)
 			self.img_icon.set_from_pixbuf(air_info['pb'])
-			InstallBox.pb=air_info['pb']
+			self.pb=air_info['pb']
 			self._debug("File %s"%self.air_file)
 		else:
 			Gtk.Image.set_from_file(self,DROP_INCORRECT)
