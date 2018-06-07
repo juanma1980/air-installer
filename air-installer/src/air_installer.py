@@ -208,6 +208,8 @@ class confirmDialog(Gtk.Window):
 			self.box_button.show()
 			self.box_icon.hide()
 		subprocess.check_call(['/usr/bin/xhost','-'])
+		subprocess.check_output(["xdg-mime","install","/usr/share/mime/packages/x-air-installer.xml"])
+		subprocess.check_output(["xdg-mime","default","/usr/share/applications/air-installer.desktop","/usr/share/mime/packages/x-air-installer.xml"],input=b"")
 	#def _install_file
 
 #Main

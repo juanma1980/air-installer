@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/x-air-installer">
+        <comment>Install air app</comment>
+    	    <icon name="application-x-air-installer"/>
+			<glob pattern="*.air"/>
+    </mime-type>
+</mime-info>

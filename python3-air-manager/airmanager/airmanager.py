@@ -2,6 +2,7 @@
 import os
 import stat
 import datetime
+import time
 import subprocess
 import sys
 import shutil
@@ -76,6 +77,18 @@ class AirManager():
 				shutil.copyfile (icon,hicolor_icon)
 				icon_new=os.path.basename(hicolor_icon)
 				self._modify_desktop(air_file,icon_name=icon_new)
+		#Remove adobeair mime association
+		time.sleep(1)
+		my_env=os.environ.copy()
+		my_env["DISPLAY"]=":0"
+		a=subprocess.check_output(["xdg-mime","install","--mode","system","/usr/share/mime/packages/x-air-installer.xml"],env=my_env)
+		self._debug("Remove result: %s"%a)
+		if os.path.isfile('/usr/share/mime/application/vnd.adobe.air-application-installer-package+zip.xml'):
+			self._debug("Remove air mime")
+			os.remove('/usr/share/mime/application/vnd.adobe.air-application-installer-package+zip.xml')
+		self._debug("Fixing mime")
+		a=subprocess.check_output(["xdg-mime","default","/usr/share/applications/air-installer.desktop","/usr/share/mime/packages/x-air-installer.xml"],input=b"",env=my_env)
+		self._debug("Default result: %s"%a)
 	#def install
 
 	def _modify_desktop(self,air_file,icon_name=None):
@@ -137,7 +150,10 @@ class AirManager():
 				sw_download=self._install_adobeair()
 
 		if sw_download==False:
-			self._debug("Adobeair failed to install")
+			if sw_install_adobe:
+				self._debug("Adobeair failed to install")
+			else:
+				self._debug("Adobeair already installed")
 		#Now install the sdk
 		if not os.path.isdir(self.adobeair_folder):
 			os.makedirs(self.adobeair_folder)
@@ -265,8 +281,8 @@ Categories=Application;Education;Development;ComputerScience;\n\
 	#def _generate_desktop_sdk
 
 	def _install_adobeair_sdk(self):
-			#		if os.path.isfile(self.adobeairsdk_folder+'adobe-air/adobe-air'):
-#			return
+		if os.path.isfile(self.adobeairsdk_folder+'adobe-air/adobe-air'):
+			return
 		self._install_adobeair_depends()
 		self._debug("Installing Adobe Air SDK")
 		adobeair_urls=["http://lliurex.net/recursos-edu/misc/AdobeAIRSDK.tbz2","http://lliurex.net/recursos-edu/misc/adobe-air.tar.gz"]
@@ -293,39 +309,35 @@ Categories=Application;Education;Development;ComputerScience;\n\
 		st=os.stat("/opt/adobe-air-sdk/adobe-air/adobe-air")
 		os.chmod("/opt/adobe-air-sdk/adobe-air/adobe-air",st.st_mode | 0o111)
 
-#		self._debug("Downloading Air Runtime SDK from Archlinux")
-#	subprocess.call(["zero-lliurex-wget","http://lliurex.net/recursos-edu/misc/adobe-air.tar.gz","/tmp"])
-#	subprocess.call(["tar","xvf","/tmp/adobe-air.tar.gz","-C","/opt/adobe-air-sdk"])
-#	subprocess.call(["chmod","+x","/opt/adobe-air-sdk/adobe-air/adobe-air"])
 	#def _install_adobeair_sdk
 
 	def _install_adobeair(self):
-			if self._install_adobeair_depends():
-				self._debug("Installing Adobe Air")
-				adobeair_url="http://airdownload.adobe.com/air/lin/download/2.6/AdobeAIRInstaller.bin"
-				req=url.Request(adobeair_url,headers={'User-Agent':'Mozilla/5.0'})
-				try:
-					adobeair_file=url.urlopen(req)
-				except Exception as e:
-					self._debug('Donwload err: %s'%e)
-					return False
-				(tmpfile,tmpfile_name)=tempfile.mkstemp()
-				os.close(tmpfile)
-				with open(tmpfile_name,'wb') as output:
-					output.write(adobeair_file.read())
-				st=os.stat(tmpfile_name)
-				os.chmod(tmpfile_name,st.st_mode | 0o111)
-#				subprocess.call([tmpfile_name,"-silent","-eulaAccepted","-pingbackAllowed"])
-				os.system("DISPLAY=:0 " + tmpfile_name + " -silent -eulaAccepted -pingbackAllowed")
-				os.remove(tmpfile_name)
-				#Remove symlinks
-				if os.path.isfile("/usr/lib/libgnome-keyring.so.0"):
-					os.remove("/usr/lib/libgnome-keyring.so.0")
-				if os.path.isfile("/usr/lib/libgnome-keyring.so.0.2.0"):
-					os.remove("/usr/lib/libgnome-keyring.so.0.2.0")
-				return True
-			else:
+		if self._install_adobeair_depends():
+			self._debug("Installing Adobe Air")
+			adobeair_url="http://airdownload.adobe.com/air/lin/download/2.6/AdobeAIRInstaller.bin"
+			req=url.Request(adobeair_url,headers={'User-Agent':'Mozilla/5.0'})
+			try:
+				adobeair_file=url.urlopen(req)
+			except Exception as e:
+				self._debug('Donwload err: %s'%e)
 				return False
+			(tmpfile,tmpfile_name)=tempfile.mkstemp()
+			os.close(tmpfile)
+			with open(tmpfile_name,'wb') as output:
+				output.write(adobeair_file.read())
+			st=os.stat(tmpfile_name)
+			os.chmod(tmpfile_name,st.st_mode | 0o111)
+#			subprocess.call([tmpfile_name,"-silent","-eulaAccepted","-pingbackAllowed"])
+			os.system("DISPLAY=:0 " + tmpfile_name + " -silent -eulaAccepted -pingbackAllowed")
+			os.remove(tmpfile_name)
+			#Remove symlinks
+			if os.path.isfile("/usr/lib/libgnome-keyring.so.0"):
+				os.remove("/usr/lib/libgnome-keyring.so.0")
+			if os.path.isfile("/usr/lib/libgnome-keyring.so.0.2.0"):
+				os.remove("/usr/lib/libgnome-keyring.so.0.2.0")
+			return True
+		else:
+			return False
 	#def _install_adobeair
 
 	def _install_adobeair_depends(self):
@@ -442,6 +454,26 @@ Categories=Application;Education;Development;ComputerScience;\n\
 	#def get_installed_apps
 
 	def remove_air_app(self,*kwarg):
+
+		def supercow_remove(*args):
+			air_id=args[-1]
+			self._debug("Supercow remove %s"%air_id)
+			my_env=os.environ.copy()
+			my_env["DISPLAY"]=":0"
+			pkgname=subprocess.check_output(["apt-cache","search",air_id],env=my_env,universal_newlines=True)
+			pkglist=pkgname.split(' ')
+			for pkg in pkglist:
+				self._debug("Testing %s"%pkg)
+				if air_id.lower() in pkg.lower():
+					try:
+						self._debug("Uninstalling %s"%pkg)
+						sw_uninstall_err=subprocess.check_output(["apt-get","-y","remove",pkg],universal_newlines=True,env=my_env)
+						self._debug("Uninstalled OK %s"%pkg)
+						sw_err=0
+					except Exception as e:
+						self._debug(e)
+					break
+
 		sw_err=1
 		my_env=os.environ.copy()
 		my_env["DISPLAY"]=":0"
@@ -460,22 +492,21 @@ Categories=Application;Education;Development;ComputerScience;\n\
 						self._debug(e)
 			else:
 				try:
-					#Let's try with supercow's power
-					pkgname=subprocess.check_output(["apt-cache","search",air_dict['air_id']],env=my_env,universal_newlines=True)
-					pkglist=pkgname.split(' ')
-					for pkg in pkglist:
-						self._debug("Testing %s"%pkg)
-						if air_dict['air_id'].lower() in pkg.lower():
-							try:
-								self._debug("Uninstalling %s"%pkg)
-								sw_uninstall_err=subprocess.check_output(["apt-get","-y","remove",pkg],universal_newlines=True)
-								self._debug("Uninstalled OK %s"%pkg)
-								sw_err=0
-							except Exception as e:
-								self._debug(e)
-							break
+				#Let's try with supercow's power
+					supercow_remove(air_dict['air_id'])
 				except Exception as e:
 						sw_uninstall_err=True
+				#Some air apps install more than one app so it's needed to check the installed desktop
+				try:
+					if 'desktop' in air_dict.keys():
+						self._debug("Checking full uninstall of %s"%air_dict['desktop'])
+						if os.path.isfile(air_dict['desktop']):
+							self._debug("Uninstalling air from desktop")
+							desktop=air_dict['desktop'].replace('.desktop','')
+							supercow_remove(os.path.basename(desktop))
+				except Exception as e:
+						sw_uninstall_err=True
+
 				
 				if sw_err:
 					try:
