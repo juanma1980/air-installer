@@ -1,6 +1,7 @@
 #!/bin/bash
 
 APP="air-installer"
-[ -e /usr/share/mime/packages/application-x-$APP.xml ] && rm /usr/share/mime/packages/application-x-$APP.xml
+[ -e /usr/share/mime/application/application-x-$APP.xml ] && rm /usr/share/mime/packages/application-x-$APP.xml
 [ -e /usr/share/applications/$APP.desktop ] && rm /usr/share/applications/$APP.desktop
 
+exit 0

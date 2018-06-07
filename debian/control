@@ -14,7 +14,7 @@ Description: Air app manager
 
 Package: air-installer
 Architecture: all
-Depends: ${misc:Depends}, python3-air-manager,air-helper(=${binary:Version}),python3-dialog
+Depends: ${misc:Depends}, python3-air-manager(=${binary:Version}),air-helper(=${binary:Version}),python3-dialog
 Description: Air installer dialog
 
 Package: air-helper
